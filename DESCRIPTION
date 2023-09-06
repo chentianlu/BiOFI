@@ -1,0 +1,30 @@
+Package: BiOFI
+Type: Package
+Title: Feature Identification Between Metabolome and Microbiome in Disease and Health
+Version: 0.1.0
+Authors@R: person("Tianlu", "Chen", email = "chentianlu@sjtu.edu.cn",
+                  role = c("aut", "cre"))
+Maintainer: Tianlu Chen <chentianlu@sjtu.edu.cn>
+Description: It is a strategy that provides the identification of metabolome and microbiome (Bi-omics) feature. 
+            It is able to screen out key/driving features (metabolites, microbes, and pathway functions) by an integrated 
+            importance score (IIS),combining sub-scores derived from difference, correlation, abundance, and network analysis. 
+            It is able to identify microbe-function-metabolite chains and to rank association pairs within specific functions.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    dplyr,
+    ggrepel,
+    htmlwidgets,
+    igraph,
+    networkD3,
+    tidyverse,
+    visNetwork,
+    ppcor
+RoxygenNote: 7.2.3
+Depends: 
+    R (>= 2.10)
+Author: Tianlu Chen [aut, cre]
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

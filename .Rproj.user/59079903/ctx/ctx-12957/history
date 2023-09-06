@@ -1,0 +1,512 @@
+temp_Node_score <- IFS[["IFS_completed"]][,1:2]
+colnames(meta2func1)[1] <- "nodes"
+meta2func1= merge(meta2func1,temp_Node_score,all.x = T,by="nodes")
+colnames(micro2func1)[1] <- "nodes"
+micro2func1=merge(micro2func1,temp_Node_score,all.x = T,by="nodes")
+# write.csv(meta2func1,file='./results/MMfunc/Metabolite in same pathway.csv',row.names = FALSE)
+# write.csv(micro2func1,file='./results/MMfunc/Microbe in same pathway.csv',row.names = FALSE)
+# Sankey ------------------------------------------------------------------
+rownames(meta2func1)<-1:length(rownames(meta2func1))
+colnames(meta2func1)=c("source","target","ns")
+rownames(micro2func1)<-1:length(rownames(micro2func1))
+colnames(micro2func1)=c("target","source","ns")
+MM2func4<-rbind(meta2func1,micro2func1)
+MM2func4$value<-rep(1,times=length(rownames(MM2func4)))
+nodes<- data.frame(name=c(as.character(MM2func4$source), as.character(MM2func4$target)) %>% unique())
+MM2func4$IDsource=match(MM2func4$source, nodes$name)-1
+MM2func4$IDtarget=match(MM2func4$target, nodes$name)-1
+sankeyNetwork(Links = MM2func4, Nodes = nodes,
+Source = "IDsource", Target = "IDtarget",
+NodeID = "name",Value='value',
+units = "TWh", fontSize = 12, nodeWidth = 30)
+# saveNetwork(sn,file = "./results/MMfunc/sankeyNetwork.html")
+meta_in_func <- unique(meta2func1$source)
+mic_in_func <- unique(micro2func1$target)
+MMfunc_res <- list(meta2func = meta_in_func, micro2func = mic_in_func)
+return(MMfunc_res)
+}
+MMfunc(IFS = IFScore)
+MMfunc_res <- MMfunc(IFS = IFScore)
+MMfunc(IFS = IFScore)
+sankeyNetwork(Links = MM2func4, Nodes = nodes,
+Source = "IDsource", Target = "IDtarget",
+NodeID = "name",Value='value',
+units = "TWh", fontSize = 12, nodeWidth = 30)
+library(pheatmap)
+grid.draw(sn)
+sn
+View(sn)
+sn
+MMfunc<-function(IFS,path_IFSthre=2.5,mm_IFSthre=2){
+mic_met_path=get0("sysdata", envir = asNamespace("BiOFI"))$mm4path
+mic_path=get0("sysdata", envir = asNamespace("BiOFI"))$micro4path
+A=as.data.frame(IFS[["IFS_completed"]])
+colnames(A)=c("nodes","ns","group")
+Metabolite=A[which(A$group=="Metabolite"& A$ns>mm_IFSthre),]$nodes
+Microbe=A[which(A$group=="Microbe"& A$ns>mm_IFSthre),]$nodes
+Metabolome_pathway=A[A$group=="Metabolome_pathway"& A$ns>path_IFSthre,]
+Microbiome_pathway=A[A$group=="Microbiome_pathway" & A$ns>path_IFSthre,]
+intersect_path <- unique(intersect(Metabolome_pathway$nodes,Microbiome_pathway$nodes))
+pathway<-rbind(subset(Metabolome_pathway,nodes %in% intersect_path),subset(Microbiome_pathway,nodes %in% intersect_path))
+metabolite2pathway<-data.frame()
+for ( i in Metabolite){
+m1<-mic_met_path[which(mic_met_path$metabolite==i),]
+m1<-m1[,c(3,4)]
+metabolite2pathway<-rbind(metabolite2pathway,m1)
+}
+colnames(metabolite2pathway)[2]='Pathway'
+meta2func=data.frame()
+for(i in pathway$nodes){
+a1=metabolite2pathway[which(metabolite2pathway$Pathway==i),]
+meta2func=rbind(meta2func,a1)
+}
+#
+# microbe and pathways ------------------------------------------------------------------
+microbename=Microbe
+microbelist=c()
+B=data.frame()
+for(i in 1:length(microbename)){
+microbe=strsplit(microbename[i],'; ')
+microbenew=vector()
+for(i in 1:length(microbe[[1]])){
+if(nchar(microbe[[1]][i])==3){
+numb=i-1
+break}else{
+numb=length(microbe[[1]])
+}}
+for(i in 1:numb){
+a=microbe[[1]][i]
+microbenew=append(microbenew,a)
+}
+microbenew=paste(microbenew,collapse ='; ')
+microbelist=append(microbelist,microbenew)
+}
+for(i in 1:length(microbelist)){
+micname=strsplit(microbelist[i],'; ')
+num=length(micname[[1]])
+if(num==3){
+if(micname[[1]][2]=='p__unclassified Bacteria'){
+A=mic_path[mic_path$Class=='c__Abyssogena phaseoliformis symbiont [TAX:596095]',]
+}else{
+A=mic_path[mic_path$Class==micname[[1]][3],]
+}
+if(length(rownames(A)!=0)){
+A$name=microbelist[i]}
+}
+if(num==4){
+A=mic_path[mic_path$Order==micname[[1]][4],]
+A$name=microbelist[i]
+}
+if(num==5){
+A=mic_path[mic_path$Family==micname[[1]][5],]
+if(length(rownames(A)!=0)){
+A$name=microbelist[i]}
+}
+if(num==6){
+micname6=gsub('g__','',micname[[1]][6])
+A41=mic_path[mic_path$Family==micname[[1]][5],]
+A=A41[grepl(micname6,A41$Species),]
+if(length(rownames(A)!=0)){
+A$name=microbelist[i]}
+}
+if(num==7){
+micname7=gsub('s__','',micname[[1]][7])
+A51=mic_path[mic_path$Order==micname[[1]][4],]
+A52=A51[A51$Family==micname[[1]][5],]
+A53=mic_path[mic_path$Genus==micname[[1]][6],]
+A=mic_path[grepl(micname7,A53$Species),]
+if(length(rownames(A)!=0)){
+A$name=microbelist[i]}
+}
+if(is.null(A)){
+A=data.frame()
+}
+B=rbind(B,A)
+}
+Micropath=unique(B[,c(11,10)])
+# revise ------------------------------------------------------------------
+micro2pathway<-data.frame()
+for(i in Microbe){
+m3<-Micropath[which(Micropath$name==i),]
+m3<-m3[,c(1,2)]
+micro2pathway<-rbind(micro2pathway,m3)
+}
+colnames(micro2pathway)[2]='Pathway'
+micro2func=data.frame()
+for(i in pathway$nodes){
+a1=micro2pathway[which(micro2pathway$Pathway==i),]
+micro2func=rbind(micro2func,a1)
+}
+pathway2=intersect(unique(meta2func$Pathway),unique(micro2func$Pathway))
+meta2func1=data.frame()
+micro2func1=data.frame()
+for(i in pathway2){
+a1=meta2func[which(meta2func$Pathway==i),]
+meta2func1=rbind(meta2func1,a1)
+a2=micro2func[which(micro2func$Pathway==i),]
+micro2func1=rbind(micro2func1,a2)
+}
+# save --------------------------------------------------------------------
+# if(!file.exists("./results/MMfunc")){
+#   dir.create("./results/MMfunc",recursive = T)
+# }
+temp_Node_score <- IFS[["IFS_completed"]][,1:2]
+colnames(meta2func1)[1] <- "nodes"
+meta2func1= merge(meta2func1,temp_Node_score,all.x = T,by="nodes")
+colnames(micro2func1)[1] <- "nodes"
+micro2func1=merge(micro2func1,temp_Node_score,all.x = T,by="nodes")
+# write.csv(meta2func1,file='./results/MMfunc/Metabolite in same pathway.csv',row.names = FALSE)
+# write.csv(micro2func1,file='./results/MMfunc/Microbe in same pathway.csv',row.names = FALSE)
+# Sankey ------------------------------------------------------------------
+rownames(meta2func1)<-1:length(rownames(meta2func1))
+colnames(meta2func1)=c("source","target","ns")
+rownames(micro2func1)<-1:length(rownames(micro2func1))
+colnames(micro2func1)=c("target","source","ns")
+MM2func4<-rbind(meta2func1,micro2func1)
+MM2func4$value<-rep(1,times=length(rownames(MM2func4)))
+nodes<- data.frame(name=c(as.character(MM2func4$source), as.character(MM2func4$target)) %>% unique())
+MM2func4$IDsource=match(MM2func4$source, nodes$name)-1
+MM2func4$IDtarget=match(MM2func4$target, nodes$name)-1
+sn <- sankeyNetwork(Links = MM2func4, Nodes = nodes,
+Source = "IDsource", Target = "IDtarget",
+NodeID = "name",Value='value',
+units = "TWh", fontSize = 12, nodeWidth = 30)
+# saveNetwork(sn,file = "./results/MMfunc/sankeyNetwork.html")
+View(sn)
+meta_in_func <- unique(meta2func1$source)
+mic_in_func <- unique(micro2func1$target)
+MMfunc_res <- list(meta2func = meta_in_func, micro2func = mic_in_func)
+return(MMfunc_res)
+}
+MMfunc_res <- MMfunc(IFS = IFScore)
+sn
+# saveNetwork(sn,file = "./results/MMfunc/sankeyNetwork.html")
+View(sn)
+MMfunc<-function(IFS,path_IFSthre=2.5,mm_IFSthre=2){
+mic_met_path=get0("sysdata", envir = asNamespace("BiOFI"))$mm4path
+mic_path=get0("sysdata", envir = asNamespace("BiOFI"))$micro4path
+A=as.data.frame(IFS[["IFS_completed"]])
+colnames(A)=c("nodes","ns","group")
+Metabolite=A[which(A$group=="Metabolite"& A$ns>mm_IFSthre),]$nodes
+Microbe=A[which(A$group=="Microbe"& A$ns>mm_IFSthre),]$nodes
+Metabolome_pathway=A[A$group=="Metabolome_pathway"& A$ns>path_IFSthre,]
+Microbiome_pathway=A[A$group=="Microbiome_pathway" & A$ns>path_IFSthre,]
+intersect_path <- unique(intersect(Metabolome_pathway$nodes,Microbiome_pathway$nodes))
+pathway<-rbind(subset(Metabolome_pathway,nodes %in% intersect_path),subset(Microbiome_pathway,nodes %in% intersect_path))
+metabolite2pathway<-data.frame()
+for ( i in Metabolite){
+m1<-mic_met_path[which(mic_met_path$metabolite==i),]
+m1<-m1[,c(3,4)]
+metabolite2pathway<-rbind(metabolite2pathway,m1)
+}
+colnames(metabolite2pathway)[2]='Pathway'
+meta2func=data.frame()
+for(i in pathway$nodes){
+a1=metabolite2pathway[which(metabolite2pathway$Pathway==i),]
+meta2func=rbind(meta2func,a1)
+}
+#
+# microbe and pathways ------------------------------------------------------------------
+microbename=Microbe
+microbelist=c()
+B=data.frame()
+for(i in 1:length(microbename)){
+microbe=strsplit(microbename[i],'; ')
+microbenew=vector()
+for(i in 1:length(microbe[[1]])){
+if(nchar(microbe[[1]][i])==3){
+numb=i-1
+break}else{
+numb=length(microbe[[1]])
+}}
+for(i in 1:numb){
+a=microbe[[1]][i]
+microbenew=append(microbenew,a)
+}
+microbenew=paste(microbenew,collapse ='; ')
+microbelist=append(microbelist,microbenew)
+}
+for(i in 1:length(microbelist)){
+micname=strsplit(microbelist[i],'; ')
+num=length(micname[[1]])
+if(num==3){
+if(micname[[1]][2]=='p__unclassified Bacteria'){
+A=mic_path[mic_path$Class=='c__Abyssogena phaseoliformis symbiont [TAX:596095]',]
+}else{
+A=mic_path[mic_path$Class==micname[[1]][3],]
+}
+if(length(rownames(A)!=0)){
+A$name=microbelist[i]}
+}
+if(num==4){
+A=mic_path[mic_path$Order==micname[[1]][4],]
+A$name=microbelist[i]
+}
+if(num==5){
+A=mic_path[mic_path$Family==micname[[1]][5],]
+if(length(rownames(A)!=0)){
+A$name=microbelist[i]}
+}
+if(num==6){
+micname6=gsub('g__','',micname[[1]][6])
+A41=mic_path[mic_path$Family==micname[[1]][5],]
+A=A41[grepl(micname6,A41$Species),]
+if(length(rownames(A)!=0)){
+A$name=microbelist[i]}
+}
+if(num==7){
+micname7=gsub('s__','',micname[[1]][7])
+A51=mic_path[mic_path$Order==micname[[1]][4],]
+A52=A51[A51$Family==micname[[1]][5],]
+A53=mic_path[mic_path$Genus==micname[[1]][6],]
+A=mic_path[grepl(micname7,A53$Species),]
+if(length(rownames(A)!=0)){
+A$name=microbelist[i]}
+}
+if(is.null(A)){
+A=data.frame()
+}
+B=rbind(B,A)
+}
+Micropath=unique(B[,c(11,10)])
+# revise ------------------------------------------------------------------
+micro2pathway<-data.frame()
+for(i in Microbe){
+m3<-Micropath[which(Micropath$name==i),]
+m3<-m3[,c(1,2)]
+micro2pathway<-rbind(micro2pathway,m3)
+}
+colnames(micro2pathway)[2]='Pathway'
+micro2func=data.frame()
+for(i in pathway$nodes){
+a1=micro2pathway[which(micro2pathway$Pathway==i),]
+micro2func=rbind(micro2func,a1)
+}
+pathway2=intersect(unique(meta2func$Pathway),unique(micro2func$Pathway))
+meta2func1=data.frame()
+micro2func1=data.frame()
+for(i in pathway2){
+a1=meta2func[which(meta2func$Pathway==i),]
+meta2func1=rbind(meta2func1,a1)
+a2=micro2func[which(micro2func$Pathway==i),]
+micro2func1=rbind(micro2func1,a2)
+}
+# save --------------------------------------------------------------------
+# if(!file.exists("./results/MMfunc")){
+#   dir.create("./results/MMfunc",recursive = T)
+# }
+temp_Node_score <- IFS[["IFS_completed"]][,1:2]
+colnames(meta2func1)[1] <- "nodes"
+meta2func1= merge(meta2func1,temp_Node_score,all.x = T,by="nodes")
+colnames(micro2func1)[1] <- "nodes"
+micro2func1=merge(micro2func1,temp_Node_score,all.x = T,by="nodes")
+# write.csv(meta2func1,file='./results/MMfunc/Metabolite in same pathway.csv',row.names = FALSE)
+# write.csv(micro2func1,file='./results/MMfunc/Microbe in same pathway.csv',row.names = FALSE)
+# Sankey ------------------------------------------------------------------
+rownames(meta2func1)<-1:length(rownames(meta2func1))
+colnames(meta2func1)=c("source","target","ns")
+rownames(micro2func1)<-1:length(rownames(micro2func1))
+colnames(micro2func1)=c("target","source","ns")
+MM2func4<-rbind(meta2func1,micro2func1)
+MM2func4$value<-rep(1,times=length(rownames(MM2func4)))
+nodes<- data.frame(name=c(as.character(MM2func4$source), as.character(MM2func4$target)) %>% unique())
+MM2func4$IDsource=match(MM2func4$source, nodes$name)-1
+MM2func4$IDtarget=match(MM2func4$target, nodes$name)-1
+sn <- sankeyNetwork(Links = MM2func4, Nodes = nodes,
+Source = "IDsource", Target = "IDtarget",
+NodeID = "name",Value='value',
+units = "TWh", fontSize = 12, nodeWidth = 30)
+# saveNetwork(sn,file = "./results/MMfunc/sankeyNetwork.html")
+meta_in_func <- unique(meta2func1$source)
+mic_in_func <- unique(micro2func1$target)
+MMfunc_res <- list(meta2func = meta_in_func, micro2func = mic_in_func,snfig = sn)
+return(MMfunc_res)
+}
+MMfunc_res <- MMfunc(IFS = IFScore)
+MMfunc_res$snfig
+View(MMfunc_res)
+TarNet<-function(IFS,mm2path,r = 0.1,p_adjust = 0.05){
+mic_meta_cor=IFS[["mic_meta_cor"]]
+mic_meta_cor_p.adjust=IFS[["mic_meta_cor_p.adjust"]]
+meta_in_func=mm2path[[1]]
+mic_in_func=mm2path[[2]]
+mic_meta_cor=mic_meta_cor[mic_in_func,meta_in_func]
+mic_meta_cor_p.adjust=mic_meta_cor_p.adjust[mic_in_func,meta_in_func]
+CorrDF <- function(cormat, pmat) {
+ut = matrix (TRUE, nrow = as.numeric(nrow (cormat)), ncol = as.numeric(ncol (pmat)))
+data.frame(
+from = rownames(cormat)[row(cormat)[ut]],
+to = colnames(cormat)[col(cormat)[ut]],
+r =(cormat)[ut],
+p.adjust = pmat[ut]
+)
+}
+mic_meta_cor_df <- CorrDF(mic_meta_cor,mic_meta_cor_p.adjust)
+# if(!file.exists("./results/TarNet")){
+#   dir.create("./results/TarNet",recursive = T)
+# }
+# write.csv(mic_meta_cor_df,file='./results/TarNet/network_cor_results.csv',row.names = FALSE)
+mic_meta_cor_filtered <- mic_meta_cor_df[which(abs(mic_meta_cor_df$r) > r & mic_meta_cor_df$p.adjust < p_adjust),]
+if(length(mic_meta_cor_filtered$from)==0){
+stop("Too large a value of R results in no edges that satisfy the condition!" )
+}
+centrality = "degree"
+nodeattrib <- data.frame(nodes = union(mic_meta_cor_filtered$from,mic_meta_cor_filtered$to))
+nodeattrib$group <- 0
+for (i in as.character(nodeattrib$nodes)){
+if (i %in% mic_in_func == TRUE){
+nodeattrib[nodeattrib$nodes == i,"group"] <- "Microbe"
+}else if(i %in% meta_in_func == TRUE){
+nodeattrib[nodeattrib$nodes == i,"group"] <- "Metabolite"
+}
+}
+# save file ---------------------------------------------------------------
+# write.csv(nodeattrib,file='./results/TarNet/network_nodes_results.csv',row.names = FALSE)
+co_net <- graph_from_data_frame(mic_meta_cor_filtered,directed = F, vertices = nodeattrib)
+co_net=simplify(co_net, remove.multiple=T)
+E(co_net)[ r< 0 ]$color <- "green"
+E(co_net)[ r>0 ]$color <- "red"
+network=visIgraph(co_net)%>%
+visIgraphLayout(layout = "layout_with_fr", smooth = TRUE)%>%
+visNodes(color = list(hover = "green"))%>%visInteraction(hover = TRUE)%>%visLegend(useGroups = T,stepX = 70,stepY=70)%>%
+visGroups(groupname = 'Microbe',color="purple",shape="triangle")%>%
+visGroups(groupname = 'Metabolite',color="tomato",shape="dot")%>%
+visOptions(selectedBy = 'group')
+# saveNetwork(network,file = "./results/TarNet/network.html")
+network
+TarnetPairs <- mic_meta_cor_filtered
+return(TarnetPairs)
+}
+TarNet_res <- TarNet(IFS = IFScore, mm2path = MMfunc_res)
+library(igraph)
+library(ggrepel)
+library(visNetwork)
+library(ppcor)
+library(htmlwidgets)
+TarNet_res <- TarNet(IFS = IFScore, mm2path = MMfunc_res)
+TarNet<-function(IFS,mm2path,r = 0.1,p_adjust = 0.05){
+mic_meta_cor=IFS[["mic_meta_cor"]]
+mic_meta_cor_p.adjust=IFS[["mic_meta_cor_p.adjust"]]
+meta_in_func=mm2path[[1]]
+mic_in_func=mm2path[[2]]
+mic_meta_cor=mic_meta_cor[mic_in_func,meta_in_func]
+mic_meta_cor_p.adjust=mic_meta_cor_p.adjust[mic_in_func,meta_in_func]
+CorrDF <- function(cormat, pmat) {
+ut = matrix (TRUE, nrow = as.numeric(nrow (cormat)), ncol = as.numeric(ncol (pmat)))
+data.frame(
+from = rownames(cormat)[row(cormat)[ut]],
+to = colnames(cormat)[col(cormat)[ut]],
+r =(cormat)[ut],
+p.adjust = pmat[ut]
+)
+}
+mic_meta_cor_df <- CorrDF(mic_meta_cor,mic_meta_cor_p.adjust)
+# if(!file.exists("./results/TarNet")){
+#   dir.create("./results/TarNet",recursive = T)
+# }
+# write.csv(mic_meta_cor_df,file='./results/TarNet/network_cor_results.csv',row.names = FALSE)
+mic_meta_cor_filtered <- mic_meta_cor_df[which(abs(mic_meta_cor_df$r) > r & mic_meta_cor_df$p.adjust < p_adjust),]
+if(length(mic_meta_cor_filtered$from)==0){
+stop("Too large a value of R results in no edges that satisfy the condition!" )
+}
+centrality = "degree"
+nodeattrib <- data.frame(nodes = union(mic_meta_cor_filtered$from,mic_meta_cor_filtered$to))
+nodeattrib$group <- 0
+for (i in as.character(nodeattrib$nodes)){
+if (i %in% mic_in_func == TRUE){
+nodeattrib[nodeattrib$nodes == i,"group"] <- "Microbe"
+}else if(i %in% meta_in_func == TRUE){
+nodeattrib[nodeattrib$nodes == i,"group"] <- "Metabolite"
+}
+}
+# save file ---------------------------------------------------------------
+# write.csv(nodeattrib,file='./results/TarNet/network_nodes_results.csv',row.names = FALSE)
+co_net <- graph_from_data_frame(mic_meta_cor_filtered,directed = F, vertices = nodeattrib)
+co_net=simplify(co_net, remove.multiple=T)
+E(co_net)[ r< 0 ]$color <- "green"
+E(co_net)[ r>0 ]$color <- "red"
+network=visIgraph(co_net)%>%
+visIgraphLayout(layout = "layout_with_fr", smooth = TRUE)%>%
+visNodes(color = list(hover = "green"))%>%visInteraction(hover = TRUE)%>%visLegend(useGroups = T,stepX = 70,stepY=70)%>%
+visGroups(groupname = 'Microbe',color="purple",shape="triangle")%>%
+visGroups(groupname = 'Metabolite',color="tomato",shape="dot")%>%
+visOptions(selectedBy = 'group')
+# saveNetwork(network,file = "./results/TarNet/network.html")
+TarnetPairs <- list(TarnetPairs = mic_meta_cor_filtered,networkfig = network)
+return(TarnetPairs)
+}
+TarNet_res <- TarNet(IFS = IFScore, mm2path = MMfunc_res)
+TarNet_res$networkfig
+TarNet<-function(IFS,mm2path,r = 0.1,p_adjust = 0.05){
+mic_meta_cor=IFS[["mic_meta_cor"]]
+mic_meta_cor_p.adjust=IFS[["mic_meta_cor_p.adjust"]]
+meta_in_func=mm2path[[1]]
+mic_in_func=mm2path[[2]]
+mic_meta_cor=mic_meta_cor[mic_in_func,meta_in_func]
+mic_meta_cor_p.adjust=mic_meta_cor_p.adjust[mic_in_func,meta_in_func]
+CorrDF <- function(cormat, pmat) {
+ut = matrix (TRUE, nrow = as.numeric(nrow (cormat)), ncol = as.numeric(ncol (pmat)))
+data.frame(
+from = rownames(cormat)[row(cormat)[ut]],
+to = colnames(cormat)[col(cormat)[ut]],
+r =(cormat)[ut],
+p.adjust = pmat[ut]
+)
+}
+mic_meta_cor_df <- CorrDF(mic_meta_cor,mic_meta_cor_p.adjust)
+# if(!file.exists("./results/TarNet")){
+#   dir.create("./results/TarNet",recursive = T)
+# }
+# write.csv(mic_meta_cor_df,file='./results/TarNet/network_cor_results.csv',row.names = FALSE)
+mic_meta_cor_filtered <- mic_meta_cor_df[which(abs(mic_meta_cor_df$r) > r & mic_meta_cor_df$p.adjust < p_adjust),]
+if(length(mic_meta_cor_filtered$from)==0){
+stop("Too large a value of R results in no edges that satisfy the condition!" )
+}
+centrality = "degree"
+nodeattrib <- data.frame(nodes = union(mic_meta_cor_filtered$from,mic_meta_cor_filtered$to))
+nodeattrib$group <- 0
+for (i in as.character(nodeattrib$nodes)){
+if (i %in% mic_in_func == TRUE){
+nodeattrib[nodeattrib$nodes == i,"group"] <- "Microbe"
+}else if(i %in% meta_in_func == TRUE){
+nodeattrib[nodeattrib$nodes == i,"group"] <- "Metabolite"
+}
+}
+# save file ---------------------------------------------------------------
+# write.csv(nodeattrib,file='./results/TarNet/network_nodes_results.csv',row.names = FALSE)
+co_net <- graph_from_data_frame(mic_meta_cor_filtered,directed = F, vertices = nodeattrib)
+co_net=simplify(co_net, remove.multiple=T)
+E(co_net)[ r< 0 ]$color <- "green"
+E(co_net)[ r>0 ]$color <- "red"
+network=visIgraph(co_net)%>%
+visIgraphLayout(layout = "layout_with_fr", smooth = TRUE)%>%
+visNodes(color = list(hover = "green"))%>%visInteraction(hover = TRUE)%>%visLegend(useGroups = T,stepX = 70,stepY=70)%>%
+visGroups(groupname = 'Microbe',color="purple",shape="triangle")%>%
+visGroups(groupname = 'Metabolite',color="tomato",shape="dot")%>%
+visOptions(selectedBy = 'group')
+# saveNetwork(network,file = "./results/TarNet/network.html")
+TarnetPairs <- list(tarnetpairs = mic_meta_cor_filtered,networkfig = network)
+return(TarnetPairs)
+}
+TarNet_res <- TarNet(IFS = IFScore, mm2path = MMfunc_res)
+View(TarNet_res)
+IPS<-function(TarnetPairs,IFS){
+IFSdf1 = IFS[["IFS_completed"]][,1:2]
+colnames(IFSdf1) <- c("to","to_IFS")
+IFSdf2 = IFS[["IFS_completed"]][,1:2]
+colnames(IFSdf2) <- c("from","from_IFS")
+IPS_res <- merge(TarnetPairs[["tarnetpairs"]],IFSdf1,all.x = T)
+IPS_res <- merge(IPS_res,IFSdf2,all.x = T)
+IPS_res$r_score <- abs(IPS_res$r)
+IPS_res$r_score <-  seq(nrow(IPS_res),1,-1)
+IPS_res$r_score <- (IPS_res$r_score - 1)/(nrow(IPS_res) - 1) * 2 + 1
+IPS_res$ips <- IPS_res$to_IFS + IPS_res$from_IFS + IPS_res$r_score
+IPS_res <- IPS_res[order(IPS_res$ips,decreasing = T),]
+return(IPS_res)
+}
+IPScore <- IPS(TarnetPairs = TarNet_res,IFS = IFScore)
+View(IPScore)
+gc()
+devtools::load_all(".")
+devtools::document()
+devtools::document()

@@ -1,7 +1,6 @@
 BiOFI
- an R package for metabolome and microbiome feature identification
 ================
-
+ an R package for metabolome and microbiome feature identification
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # Introduction

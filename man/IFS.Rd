@@ -9,10 +9,10 @@ IFS(
   metaApath,
   conf = NULL,
   groupInfo = NULL,
-  nDFS = 0.4,
-  nDS = 0.3,
-  nES = 0.2,
-  nAS = 0.1,
+  nDFS = 0.25,
+  nDS = 0.25,
+  nES = 0.25,
+  nAS = 0.25,
   NS = 2.5,
   r = 0.5,
   p_adjust = 0.05
@@ -27,13 +27,13 @@ IFS(
 
 \item{groupInfo}{A data frame including sample grouping information}
 
-\item{nDFS}{A value indicated the weight of difference Score in the IFS formula. Default value is 0.4.}
+\item{nDFS}{A value indicated the weight of difference Score in the IFS formula. Default value is 0.25.}
 
-\item{nDS}{A value indicated the weight of degree score in the IFS formula. Default value is 0.3.}
+\item{nDS}{A value indicated the weight of degree score in the IFS formula. Default value is 0.25.}
 
-\item{nES}{A value indicated the weight of edge score in the IFS formula. Default value is 0.2.}
+\item{nES}{A value indicated the weight of edge score in the IFS formula. Default value is 0.25.}
 
-\item{nAS}{A value indicated the weight of abundance score in the IFS formula. Default value is 0.1.}
+\item{nAS}{A value indicated the weight of abundance score in the IFS formula. Default value is 0.25.}
 
 \item{NS}{A threshold value of IFS to identify the key nodes. Default value is 2.5.}
 

@@ -12,10 +12,10 @@
 #' @param metaApath A data frame including metabolites with compound ID and predicted KEGG pathways from Meta2pathway function.
 #' @param conf  A data frame including confounders. Default value is NULL.
 #' @param groupInfo A data frame including sample grouping information
-#' @param nDFS A value indicated the weight of difference Score in the IFS formula. Default value is 0.4.
-#' @param nDS A value indicated the weight of degree score in the IFS formula. Default value is 0.3.
-#' @param nES A value indicated the weight of edge score in the IFS formula. Default value is 0.2.
-#' @param nAS A value indicated the weight of abundance score in the IFS formula. Default value is 0.1.
+#' @param nDFS A value indicated the weight of difference Score in the IFS formula. Default value is 0.25.
+#' @param nDS A value indicated the weight of degree score in the IFS formula. Default value is 0.25.
+#' @param nES A value indicated the weight of edge score in the IFS formula. Default value is 0.25.
+#' @param nAS A value indicated the weight of abundance score in the IFS formula. Default value is 0.25.
 #' @param NS A threshold value of IFS to identify the key nodes. Default value is 2.5.
 #' @param r A threshold value of correlation coefficient to construct the network. Default value is 0.5.
 #' @param p_adjust A threshold value of correlation adjust p value to construct the network. Default  value is 0.05.

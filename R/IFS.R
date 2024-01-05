@@ -33,8 +33,8 @@
 #' @examples
 #' IFScore <- IFS(microApath = micro.eg, metaApath = metabo.eg,
 #'                conf = NULL, groupInfo = groupInfo.eg)
-IFS<-function(microApath, metaApath, conf = NULL, groupInfo = NULL, nDFS = 0.4,
-              nDS = 0.3, nES = 0.2, nAS = 0.1, NS = 2.5, r = 0.5, p_adjust = 0.05){
+IFS<-function(microApath, metaApath, conf = NULL, groupInfo = NULL, nDFS = 0.25,
+              nDS = 0.25, nES = 0.25, nAS = 0.25, NS = 2.5, r = 0.5, p_adjust = 0.05){
   from = NULL;to = NULL
   A=microApath
   B=metaApath
@@ -326,9 +326,12 @@ IFS<-function(microApath, metaApath, conf = NULL, groupInfo = NULL, nDFS = 0.4,
     if((mic_meta_cor_filtered$from[i] %in% dfii) & (mic_meta_cor_filtered$to[i] %in% dfii)){
       mic_meta_cor_filtered$ES[i] <- 3
       # n1 <- n1 + 1
-    }else{
+    }else if((!(mic_meta_cor_filtered$from[i] %in% dfii)) & (!(mic_meta_cor_filtered$to[i] %in% dfii))){
       # n2 <- n2 + 1
       mic_meta_cor_filtered$ES[i] <- 1
+    }else{
+      # n2 <- n2 + 1
+      mic_meta_cor_filtered$ES[i] <- 2
     }
   }
 

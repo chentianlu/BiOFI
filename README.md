@@ -19,26 +19,11 @@ You can install the development version of BiOFI from
 
 ``` r
 install.packages("devtools")
-devtools::install_github("chentianlu/BiOFI",force = TRUE)
+devtools::install_github("chentianlu/BiOFI")
 library("BiOFI")
 ```
 
 ## Example
-
-# `MicPathmatch`
-
-A funciton that is used to get pathways correspondent with the microbes
-in your own 16S or Metagenome data.The result includes two parts that
-one contains related detailed strain information and pathways of
-microbes, and the other only contains names of microbes you want to
-predict and related pathways.
-
-An example of MicPathmatch:
-
-``` r
-data('MicPathmatch.eg')
-MicPathmatch_res <- MicPathmatch(microbes = MicPathmatch.eg)
-```
 
 # `Meta2pathway`
 
@@ -130,4 +115,19 @@ IFScore=IFS(microApath = micro.eg, metaApath = metabo.eg,
 MMfunc_res <- MMfunc(IFS = IFScore)
 TarNet_res <- TarNet(IFS = IFScore, mm2path = MMfunc_res)
 IPScore <- IPS(TarnetPairs = TarNet_res,IFS = IFScore)
+```
+
+# `MicPathmatch`
+
+A funciton that is used to get pathways correspondent with the microbes
+in your own 16S or Metagenome data.The result includes two parts that
+one contains related detailed strain information and pathways of
+microbes, and the other only contains names of microbes you want to
+predict and related pathways.
+
+An example of MicPathmatch:
+
+``` r
+data('MicPathmatch.eg')
+MicPathmatch_res <- MicPathmatch(microbes = MicPathmatch.eg)
 ```

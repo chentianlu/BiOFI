@@ -15,7 +15,7 @@
 #' @importFrom  dplyr n
 #' @importFrom  dplyr group_by
 #' @examples
-#' Meta2pathway_res <- Meta2pathway(metadf = Meta2pathway.eg)
+#' Meta2pathway_res <- Meta2pathway(metadf = metabo.eg)
 
 Meta2pathway<-function(metadf){
   A=metadf

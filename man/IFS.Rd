@@ -15,7 +15,8 @@ IFS(
   nAS = 0.25,
   NS = 2.5,
   r = 0.5,
-  p_adjust = 0.05
+  p_adjust = 0.05,
+  cor_method = "pearson"
 )
 }
 \arguments{
@@ -39,7 +40,9 @@ IFS(
 
 \item{r}{A threshold value of correlation coefficient to construct the network. Default value is 0.5.}
 
-\item{p_adjust}{A threshold value of correlation adjust p value to construct the network. Default  value is 0.05.}
+\item{p_adjust}{A threshold value of correlation adjust p value to construct the network. Default value is 0.05.}
+
+\item{cor_method}{Methods of correlation analysis. Default is pearson.}
 }
 \value{
 IFS_res A list including IFS and other sub-score results.

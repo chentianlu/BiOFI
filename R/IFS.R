@@ -18,7 +18,8 @@
 #' @param nAS A value indicated the weight of abundance score in the IFS formula. Default value is 0.25.
 #' @param NS A threshold value of IFS to identify the key nodes. Default value is 2.5.
 #' @param r A threshold value of correlation coefficient to construct the network. Default value is 0.5.
-#' @param p_adjust A threshold value of correlation adjust p value to construct the network. Default  value is 0.05.
+#' @param p_adjust A threshold value of correlation adjust p value to construct the network. Default value is 0.05.
+#' @param cor_method Methods of correlation analysis. Default is pearson.
 #' @return IFS_res A list including IFS and other sub-score results.
 #' @export IFS
 #' @importFrom igraph graph_from_data_frame
@@ -34,7 +35,7 @@
 #' IFScore <- IFS(microApath = micro.eg, metaApath = metabo.eg,
 #'                conf = NULL, groupInfo = groupInfo.eg)
 IFS<-function(microApath, metaApath, conf = NULL, groupInfo = NULL, nDFS = 0.25,
-              nDS = 0.25, nES = 0.25, nAS = 0.25, NS = 2.5, r = 0.5, p_adjust = 0.05){
+              nDS = 0.25, nES = 0.25, nAS = 0.25, NS = 2.5, r = 0.5, p_adjust = 0.05, cor_method = "pearson"){
   from = NULL;to = NULL
   A=microApath
   B=metaApath
@@ -95,18 +96,18 @@ IFS<-function(microApath, metaApath, conf = NULL, groupInfo = NULL, nDFS = 0.25,
 
     if(length(rownames(conf))==0){
       mic_meta_cor[,m] = apply (A, MARGIN = 2, FUN = function (x)
-        cor.test (as.numeric(x),as.numeric(B[,m]), method = "pearson")$estimate)
+        cor.test (as.numeric(x),as.numeric(B[,m]), method = cor_method)$estimate)
 
       mic_meta_cor_p[,m] = apply (A, MARGIN = 2, FUN = function (x)
-        cor.test (as.numeric(x),as.numeric(B[,m]), method ="pearson")$p.value)
+        cor.test (as.numeric(x),as.numeric(B[,m]), method = cor_method)$p.value)
 
     }else{
       tryCatch({
         mic_meta_cor[,m] = apply (A, MARGIN = 2, FUN = function (x)
-          ppcor::pcor.test (as.numeric(x),as.numeric(B[,m]), conf, method = "pearson")$estimate)
+          ppcor::pcor.test (as.numeric(x),as.numeric(B[,m]), conf, method = cor_method)$estimate)
 
         mic_meta_cor_p[,m] = apply (A, MARGIN = 2, FUN = function (x)
-          ppcor::pcor.test (as.numeric(x),as.numeric(B[,m]), conf, method ="pearson")$p.value)
+          ppcor::pcor.test (as.numeric(x),as.numeric(B[,m]), conf, method = cor_method)$p.value)
       }, error=function(e) {
       })
 
@@ -121,21 +122,21 @@ IFS<-function(microApath, metaApath, conf = NULL, groupInfo = NULL, nDFS = 0.25,
     del_var <- append(del_var,m)
     if(length(rownames(conf))==0){
       temp_cor = apply(as.data.frame(A[,-del_var]), MARGIN = 2,FUN = function (x)
-        cor.test (as.numeric(x), as.numeric(A[,m]), method = "pearson")$estimate)
+        cor.test (as.numeric(x), as.numeric(A[,m]), method = cor_method)$estimate)
       mic_intra_cor [ , m] = c(rep(NA,m),temp_cor)
 
       temp_p = apply(as.data.frame(A[,-del_var]), MARGIN = 2, FUN = function (x)
-        cor.test (as.numeric(x), as.numeric(A[,m]), method ="pearson")$p.value)
+        cor.test (as.numeric(x), as.numeric(A[,m]), method = cor_method)$p.value)
       mic_intra_cor_p[,m] = c(rep(NA,m),temp_p)
     }else{
       tryCatch({
         if(m!=ncol (A)){
           temp_cor = apply (as.data.frame(A[,-del_var]), MARGIN = 2, FUN = function (x)
-            ppcor::pcor.test (as.numeric(x),as.numeric(A[,m]), conf, method = "pearson")$estimate)
+            ppcor::pcor.test (as.numeric(x),as.numeric(A[,m]), conf, method = cor_method)$estimate)
           mic_intra_cor[,m] = c(rep(NA,m),temp_cor)
 
           temp_p = apply (as.data.frame(A[,-del_var]), MARGIN = 2, FUN = function (x)
-            ppcor::pcor.test (as.numeric(x),as.numeric(A[,m]), conf, method ="pearson")$p.value)
+            ppcor::pcor.test (as.numeric(x),as.numeric(A[,m]), conf, method = cor_method)$p.value)
           mic_intra_cor_p[,m] =  c(rep(NA,m),temp_p)
         }else{
           mic_intra_cor[,m] = rep(NA,m)
@@ -157,21 +158,21 @@ IFS<-function(microApath, metaApath, conf = NULL, groupInfo = NULL, nDFS = 0.25,
     del_var <- append(del_var,m)
     if(length(rownames(conf))==0){
       temp_cor = apply(as.data.frame(B[,-del_var]), MARGIN = 2, FUN = function (x)
-        cor.test (as.numeric(x),as.numeric(B[,m]), method = "pearson")$estimate)
+        cor.test (as.numeric(x),as.numeric(B[,m]), method = cor_method)$estimate)
       met_intra_cor [ , m] =  c(rep(NA,m),temp_cor)
 
       temp_p = apply(as.data.frame(B[,-del_var]), MARGIN = 2, FUN = function (x)
-        cor.test (as.numeric(x), as.numeric(B[,m]), method ="pearson")$p.value)
+        cor.test (as.numeric(x), as.numeric(B[,m]), method = cor_method)$p.value)
       met_intra_cor_p[,m] =  c(rep(NA,m),temp_p)
     }else{
       tryCatch({
         if(m!=ncol (B)){
           temp_cor = apply (as.data.frame(B[,-del_var]), MARGIN = 2, FUN = function (x)
-            ppcor::pcor.test (as.numeric(x),as.numeric(B[,m]), conf, method = "pearson")$estimate)
+            ppcor::pcor.test (as.numeric(x),as.numeric(B[,m]), conf, method = cor_method)$estimate)
           met_intra_cor[,m] =  c(rep(NA,m),temp_cor)
 
           temp_p = apply (as.data.frame(B[,-del_var]), MARGIN = 2, FUN = function (x)
-            ppcor::pcor.test (as.numeric(x),as.numeric(B[,m]), conf, method ="pearson")$p.value)
+            ppcor::pcor.test (as.numeric(x),as.numeric(B[,m]), conf, method = cor_method)$p.value)
           met_intra_cor_p[,m] =  c(rep(NA,m),temp_p)
         }else{
           met_intra_cor[,m] = rep(NA,m)

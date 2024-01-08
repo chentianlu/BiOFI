@@ -20,5 +20,5 @@ If metabolites do not have compound IDs, keep the original names.
 See data example "Meta2pathway.eg" for details.
 }
 \examples{
-Meta2pathway_res <- Meta2pathway(metadf = Meta2pathway.eg)
+Meta2pathway_res <- Meta2pathway(metadf = metabo.eg)
 }

@@ -40,7 +40,7 @@ An example of Meta2pathway:
 
 ``` r
 data('Meta2pathway.eg')
-Meta2pathway_res <- Meta2pathway(metadf = Meta2pathway.eg)
+Meta2pathway_res = Meta2pathway(metadf = Meta2pathway.eg)
 ```
 
 # `IFS`
@@ -58,8 +58,7 @@ data('micro.eg')
 data('metabo.eg')
 data('groupInfo.eg')
 data('confounder.eg')
-IFScore=IFS(microApath = micro.eg, metaApath = metabo.eg,
-conf=confounder.eg,groupInfo=groupInfo.eg)
+IFScore = IFS(microApath = micro.eg, metaApath = metabo.eg, conf = confounder.eg, groupInfo = groupInfo.eg)
 ```
 
 # `MMfunc`
@@ -74,9 +73,8 @@ data('micro.eg')
 data('metabo.eg')
 data('groupInfo.eg')
 data('confounder.eg')
-IFScore=IFS(microApath = micro.eg, metaApath = metabo.eg,
-	groupInfo=groupInfo.eg)
-MMfunc_res <- MMfunc(IFS = IFScore)
+IFScore = IFS(microApath = micro.eg, metaApath = metabo.eg, groupInfo = groupInfo.eg)
+MMfunc_res = MMfunc(IFS = IFScore)
 ```
 
 # `TarNet`
@@ -92,10 +90,9 @@ data('micro.eg')
 data('metabo.eg')
 data('groupInfo.eg')
 data('confounder.eg')
-IFScore=IFS(microApath = micro.eg, metaApath = metabo.eg,
-	groupInfo=groupInfo.eg)
-MMfunc_res <- MMfunc(IFS = IFScore)
-TarNet_res <- TarNet(IFS = IFScore, mm2path = MMfunc_res)
+IFScore = IFS(microApath = micro.eg, metaApath = metabo.eg, groupInfo = groupInfo.eg)
+MMfunc_res = MMfunc(IFS = IFScore)
+TarNet_res = TarNet(IFS = IFScore, mm2path = MMfunc_res)
 ```
 
 # `IPS`
@@ -110,11 +107,10 @@ data('micro.eg')
 data('metabo.eg')
 data('groupInfo.eg')
 data('confounder.eg')
-IFScore=IFS(microApath = micro.eg, metaApath = metabo.eg,
-	groupInfo=groupInfo.eg)
-MMfunc_res <- MMfunc(IFS = IFScore)
-TarNet_res <- TarNet(IFS = IFScore, mm2path = MMfunc_res)
-IPScore <- IPS(TarnetPairs = TarNet_res,IFS = IFScore)
+IFScore = IFS(microApath = micro.eg, metaApath = metabo.eg, groupInfo = groupInfo.eg)
+MMfunc_res = MMfunc(IFS = IFScore)
+TarNet_res = TarNet(IFS = IFScore, mm2path = MMfunc_res)
+IPScore = IPS(TarnetPairs = TarNet_res,IFS = IFScore)
 ```
 
 # `MicPathmatch`
@@ -129,5 +125,5 @@ An example of MicPathmatch:
 
 ``` r
 data('MicPathmatch.eg')
-MicPathmatch_res <- MicPathmatch(microbes = MicPathmatch.eg)
+MicPathmatch_res  = MicPathmatch(microbes = MicPathmatch.eg)
 ```
